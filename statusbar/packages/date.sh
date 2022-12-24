@@ -5,11 +5,13 @@ source ~/.profile
 
 this=_date
 s2d_reset="^d^"
-color="^c#2D1B46^^b#335566^"
+#color="^c#2D1B46^^b#335566^"
+#color="^c#553388^^b#334466^"
+color="^c#1A1A1A^^b#334466^"
 signal=$(echo "^s$this^" | sed 's/_//')
 
 update() {
-    time_text="$(date '+%m/%d %H:%M')"
+    time_text="$(date '+%Y/%m/%d %H:%M:%S')"
     case "$(date '+%I')" in
         "01") time_icon="" ;;
         "02") time_icon="" ;;
@@ -25,7 +27,7 @@ update() {
         "12") time_icon="" ;;
     esac
 
-    text=" $time_icon $time_text "
+    text="$time_icon $time_text "
     echo $text
     sed -i '/^export '$this'=.*$/d' $DWM/statusbar/temp
     printf "export %s='%s%s%s%s'\n" $this "$color" "$signal" "$text" "$s2d_reset" >> $DWM/statusbar/temp

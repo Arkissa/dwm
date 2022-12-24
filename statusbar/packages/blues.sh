@@ -21,30 +21,30 @@ s2d_reset="^d^"
 #color="^c#553388^^b#334466^"
 color="^c#1A1A1A^^b#334466^"
 signal=$(echo "^s$this^" | sed 's/_//')
+blues_status=$(bluetoothctl show | grep "Powered:" | awk -F ': ' '{print $2}')
 
 update() {
-    sink=$(pactl info | grep 'Default Sink' | awk '{print $3}')
-    volunmuted=$(pactl list sinks | grep $sink -A 6 | sed -n '7p' | grep 'Mute: no')
-    vol_text=$(pactl list sinks | grep $sink -A 7 | sed -n '8p' | awk '{printf int($5)}')
-    if [ ! "$volunmuted" ];      then vol_text="--"; vol_icon="ﱝ";
-    elif [ "$vol_text" -eq 0 ];  then vol_text="00"; vol_icon="婢";
-    elif [ "$vol_text" -lt 10 ]; then vol_icon="奔"; vol_text=0$vol_text;
-    elif [ "$vol_text" -le 50 ]; then vol_icon="奔";
-    else vol_icon="墳"; fi
+    blues=()
+    [ "$blues_status" == "yes" ] && blues=(${blues[@]} "")
+    [ "$blues_status" == "no" ] && blues=(${blues[@]} "")
+    [ "$(bluetoothctl info 64:03:7F:7C:81:15 | grep 'Connected: yes')" ] && icons=(${icons[@]} "")
+    [ "$(bluetoothctl info 8C:DE:F9:E6:E5:6B | grep 'Connected: yes')" ] && icons=(${icons[@]} "")
+    [ "$(bluetoothctl info 88:C9:E8:14:2A:72 | grep 'Connected: yes')" ] && icons=(${icons[@]} "")
+    [ "$AUTOSCREEN" = "OFF" ] && icons=(${icons[@]} "ﴸ")
 
-    vol_text=$vol_text%
-
-    text="$vol_icon $vol_text"
-    echo $text
     sed -i '/^export '$this'=.*$/d' $DWM/statusbar/temp
-    printf "export %s='%s%s%s%s'\n" $this "$color" "$signal" "$text|" "$s2d_reset" >> $DWM/statusbar/temp
+    if [ "$icons" ]; then
+        text=" ${icons[@]} "
+        echo $text
+        printf "export %s='%s%s%s%s'\n" $this "$color" "$signal" "$text" "$s2d_reset" >> $DWM/statusbar/temp
+    fi
 }
 
 notify() {
     str=$(pactl list sinks | grep -E "Description:"  | sed 's/^[\t]*//g' | tr -d 'Description:' | sed 's/^[ ]*//g' | tr '\n' ':')
     IFS=":"
     arr=($str)
-    dunstify -r 9527 ${arr[-1]} "$(update)" -i audio-volume-medium
+    dunstify -r 9527 ${arr[-1]} "$($DWM/statusbar/statusbar.sh update vol)" -i audio-volume-medium
 }
 
 
