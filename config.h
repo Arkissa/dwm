@@ -1,8 +1,8 @@
 #include <X11/XF86keysym.h>
 
-static int showsystray                   = 1;         /* 是否显示托盘栏 */
+static int showsystray                   = 0;         /* 是否显示托盘栏 */
 static const int newclientathead         = 0;         /* 定义新窗口在栈顶还是栈底 */
-static const unsigned int borderpx       = 2;         /* 窗口边框大小 */
+static const unsigned int borderpx       = 5;         /* 窗口边框大小 */
 static const unsigned int systraypinning = 1;         /* 托盘跟随的显示器 0代表不指定显示器 */
 static const unsigned int systrayspacing = 1;         /* 托盘间距 */
 static int gappi                         = 12;        /* 窗口与窗口 缝隙大小 */
@@ -17,11 +17,11 @@ static const float mfact                 = 0.5;         /* 主工作区 大小�
 static const int   nmaster               = 1;         /* 主工作区 窗口数量 */
 static const unsigned int snap           = 10;        /* 边缘依附宽度 */
 static const unsigned int baralpha       = 0xc0;      /* 状态栏透明度 */
-static const unsigned int borderalpha    = 0xdd;      /* 边框透明度 */
+static const unsigned int borderalpha    = 0x1f4;      /* 边框透明度 */
 static const char *fonts[]               = { "Ubuntu Mono Nerd Font:style=medium:size=15", "monospace:size=13" };
 static const char *colors[][3]           = {          /* 颜色设置 ColFg, ColBg, ColBorder */ 
     [SchemeNorm] = { "#bbbbbb", "#333333", "#444444" },
-    [SchemeSel] = { "#ffffff", "#37474F", "#516FAB" },
+    [SchemeSel] = { "#ffffff", "#334466", "#516FAB" },
     [SchemeSelGlobal] = { "#ffffff", "#37474F", "#FFC0CB" },
     [SchemeHid] = { "#dddddd", NULL, NULL },
     [SchemeSystray] = { NULL, "#516FAB", NULL },
@@ -140,19 +140,22 @@ static Key keys[] = {
     { MODKEY,     XK_l,           resizewin,        {.ui = H_EXPAND} },        /* super l    |  调整窗口 */
 
     /* spawn + SHCMD 执行对应命令(已下部分建议完全自己重新定义) */
-    { MODKEY,              XK_s,           togglescratch, SHCMD("alacritty -t scratchpad --class float") },          /* super s          | 打开scratch终端        */
-    { MODKEY,              XK_Return,      spawn, SHCMD("alacritty") },                                              /* super enter      | 打开st终端             */
-    { MODKEY,              XK_minus,       spawn, SHCMD("alacritty --class global") },                               /* super +          | 打开全局st终端         */
-    { MODKEY,              XK_space,       spawn, SHCMD("alacritty --class float") },                                /* super space      | 打开浮动st终端         */
-    { MODALT,              XK_Return,      spawn, SHCMD("rofi -show run") },                                         /* super d          | rofi: 执行命令         */
-    { MODALT|ShiftMask,    XK_p,           spawn, SHCMD("rofi -show menu -modi 'menu:~/scripts/rofi.sh'") },         /* super p          | rofi: 自定义脚本       */
-    { MODKEY,              XK_k,           spawn, SHCMD("~/scripts/blurlock.sh") },                                  /* super k          | 锁定屏幕               */
-    { MODKEY|ShiftMask,    XK_Up,          spawn, SHCMD("~/scripts/set_vol.sh up") },                                /* super shift up   | 音量加                 */
-    { MODKEY|ShiftMask,    XK_Down,        spawn, SHCMD("~/scripts/set_vol.sh down") },                              /* super shift down | 音量减                 */
-    { MODKEY|ShiftMask,    XK_a,           spawn, SHCMD("flameshot gui -c -p ~/Pictures/screenshots") },             /* super shift a    | 截图                   */
-    { MODKEY|ShiftMask,    XK_k,           spawn, SHCMD("~/scripts/screenkey.sh") },                                 /* super shift k    | 打开键盘输入显示       */
-    { MODKEY|ShiftMask,    XK_q,           spawn, SHCMD("kill -9 $(xprop | grep _NET_WM_PID | awk '{print $3}')") }, /* super shift q    | 选中某个窗口并强制kill */
-    { ShiftMask|ControlMask, XK_c,         spawn, SHCMD("xclip -o | xclip -selection c") },                          /* super shift c    | 进阶复制               */
+    { MODKEY,              XK_s,           togglescratch, SHCMD("alacritty -t scratchpad --class float") },          /* super s            | 打开scratch终端        */
+    { MODKEY,              XK_Return,      spawn, SHCMD("alacritty") },                                              /* super enter        | 打开st终端             */
+    { MODKEY,              XK_minus,       spawn, SHCMD("alacritty --class global") },                               /* super +            | 打开全局st终端         */
+    { MODKEY,              XK_space,       spawn, SHCMD("alacritty --class float") },                                /* super space        | 打开浮动st终端         */
+    { MODALT,              XK_Return,      spawn, SHCMD("~/.config/rofi/bin/runner") },                              /* alt return         | rofi: 执行命令         */
+    { MODKEY|ControlMask,  XK_Return,      spawn, SHCMD("~/.config/rofi/bin/powermenu") },                           /* super shift return | rofi: 电源菜单         */
+    { MODALT|ShiftMask,    XK_Return,      spawn, SHCMD("~/.config/rofi/bin/launcher") },                            /* alt shift return   | rofi: 搜索菜单         */
+    { MODKEY,              XK_k,           spawn, SHCMD("~/scripts/blurlock.sh") },                                  /* super k            | 锁定屏幕               */
+    { MODKEY,              XK_F6,          spawn, SHCMD("~/scripts/light.sh up") },                                  /* super shift up     | 音量加                 */
+    { MODKEY,              XK_F5,          spawn, SHCMD("~/scripts/light.sh down") },                                /* super shift down   | 音量减                 */
+    { MODKEY,              XK_F3,          spawn, SHCMD("~/scripts/vol.sh up") },                                    /* super shift up     | 音量加                 */
+    { MODKEY,              XK_F2,          spawn, SHCMD("~/scripts/vol.sh down") },                                  /* super shift down   | 音量减                 */
+    { MODKEY|ShiftMask,    XK_a,           spawn, SHCMD("flameshot gui -c -p ~/Pictures/screenshots") },             /* super shift a      | 截图                   */
+    { MODKEY|ShiftMask,    XK_k,           spawn, SHCMD("~/scripts/screenkey.sh") },                                 /* super shift k      | 打开键盘输入显示       */
+    { MODKEY|ShiftMask,    XK_q,           spawn, SHCMD("kill -9 $(xprop | grep _NET_WM_PID | awk '{print $3}')") }, /* super shift q      | 选中某个窗口并强制kill */
+    { ShiftMask|ControlMask, XK_c,         spawn, SHCMD("xclip -o | xclip -selection c") },                          /* super shift c      | 进阶复制               */
 
     /* super key : 跳转到对应tag */
     /* super shift key : 将聚焦窗口移动到对应tag */

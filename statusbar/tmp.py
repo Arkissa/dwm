@@ -1,0 +1,7 @@
+bat = "^c#1A1A1A^^b#334467^^sbat^ ﮣ 38% |^d^"
+vol = "^c#1A1A1A^^b#334466^^svol^ 墳 75% |^d^"
+date = "^c#1A1A1A^^b#334466^^sdate^  2022/12/28 13:15:43 ^d^"
+cpu = "^c#1A1A1A^^b#334466^^scpu^ 閭 10% |  50°C |^d^"
+mem = "^c#1A1A1A^^b#334466^^smem^  2.14Gb/13.51Gb |^d^"
+blues = "^c#1A1A1A^^b#334466^^sblues^  -- |^d^"
+light = "^c#1A1A1A^^b#334467^^slight^  85% |^d^"

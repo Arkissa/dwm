@@ -7,3 +7,5 @@ statusbar/temp
 statusbar/wifilist
 result/
 statusbar/wifilist
+statusbar/_*
+statusbar/*/_*

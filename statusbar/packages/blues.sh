@@ -16,45 +16,56 @@
 
 source ~/.profile
 
-this=_vol
+this=_blues
 s2d_reset="^d^"
-#color="^c#553388^^b#334466^"
+#color="^c#1A1A1A^^b#334466^"
+#color="^c#1A1A1A^^b#D282E8^"
+#color="^c#D08DB1^^b#292431^"
 color="^c#1A1A1A^^b#334466^"
 signal=$(echo "^s$this^" | sed 's/_//')
 blues_status=$(bluetoothctl show | grep "Powered:" | awk -F ': ' '{print $2}')
+blues_name=$(bluetoothctl info | grep "Name:" | sed 's/^[\t]*//g' |awk -F ':' '{print $2}' | sed 's/^[ ]//g')
+blues_mac=$(bluetoothctl info | grep "^Device " | awk '{print $2}' |grep -E "\w+:\w+:\w+:\w+:\w+:\w+")
+blues_info=$(bluetoothctl info)
 
 update() {
     blues=()
-    [ "$blues_status" == "yes" ] && blues=(${blues[@]} "")
-    [ "$blues_status" == "no" ] && blues=(${blues[@]} "")
-    [ "$(bluetoothctl info 64:03:7F:7C:81:15 | grep 'Connected: yes')" ] && icons=(${icons[@]} "")
-    [ "$(bluetoothctl info 8C:DE:F9:E6:E5:6B | grep 'Connected: yes')" ] && icons=(${icons[@]} "")
-    [ "$(bluetoothctl info 88:C9:E8:14:2A:72 | grep 'Connected: yes')" ] && icons=(${icons[@]} "")
-    [ "$AUTOSCREEN" = "OFF" ] && icons=(${icons[@]} "ﴸ")
-
+    [ "$blues_status" == "no" ] && blues=(${blues[@]} "") \
+    || [ "$blues_status" == "yes" ] && blues=(${blues[@]} "")
+    [ "$(bluetoothctl info | grep 'Icon' | awk -F ': ' '{print $2}')" == "input-mouse" ] && blues=(${blues[@]} "")
+    [ "$(bluetoothctl info | grep 'Icon' | awk -F ': ' '{print $2}')" == "audio-headset" ] && blues=(${blues[@]} "")
+    [ "$blues_info" == 'Missing device address argument' ] && blues_name="--" && blues=("")
+    
     sed -i '/^export '$this'=.*$/d' $DWM/statusbar/temp
-    if [ "$icons" ]; then
-        text=" ${icons[@]} "
+    if [ "$blues" ]; then
+        text=" ${blues[@]} $blues_name "
         echo $text
-        printf "export %s='%s%s%s%s'\n" $this "$color" "$signal" "$text" "$s2d_reset" >> $DWM/statusbar/temp
+        printf "export %s='%s%s%s%s'\n" $this "$color" "$signal" "$text|" "$s2d_reset" >> $DWM/statusbar/temp
     fi
 }
 
 notify() {
-    str=$(pactl list sinks | grep -E "Description:"  | sed 's/^[\t]*//g' | tr -d 'Description:' | sed 's/^[ ]*//g' | tr '\n' ':')
-    IFS=":"
-    arr=($str)
-    dunstify -r 9527 ${arr[-1]} "$($DWM/statusbar/statusbar.sh update vol)" -i audio-volume-medium
+    msg="蓝牙名: $blues_name\nMAC: $blues_mac"
+    [ "$blues_info" == 'Missing device address argument' ] && msg='没有连接任何设备'
+    dunstify -r 9527 " bluetooth" "$msg"
+}
+
+toggle() {
+    if [ "$blues_status" == "yes" ]; then
+        bluetoothctl power off
+    elif [ "$blues_status" == "no" ]; then
+        bluetoothctl power on
+    fi
 }
 
 
 click() {
     case "$1" in
-        L) notify                                           ;; # 仅通知
-        M) pactl set-sink-mute @DEFAULT_SINK@ toggle        ;; # 切换静音
-        R) killall pavucontrol || pavucontrol &             ;; # 打开pavucontrol
-        U) pactl set-sink-volume @DEFAULT_SINK@ +5%; notify ;; # 音量加
-        D) pactl set-sink-volume @DEFAULT_SINK@ -5%; notify ;; # 音量减
+        L) notify                             ;; # 仅通知
+        M) toggle; update;                    ;; # 切换蓝牙
+        R) killall blueberry || blueberry &   ;; # 打开blueberry
+        U)                                    ;; # 音量加
+        D)                                    ;; # 音量减
     esac
 }
 

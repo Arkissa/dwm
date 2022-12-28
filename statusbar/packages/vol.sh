@@ -34,17 +34,17 @@ update() {
 
     vol_text=$vol_text%
 
-    text="$vol_icon $vol_text"
+    text=" $vol_icon $vol_text "
     echo $text
     sed -i '/^export '$this'=.*$/d' $DWM/statusbar/temp
     printf "export %s='%s%s%s%s'\n" $this "$color" "$signal" "$text|" "$s2d_reset" >> $DWM/statusbar/temp
 }
 
 notify() {
-    str=$(pactl list sinks | grep -E "Description:"  | sed 's/^[\t]*//g' | tr -d 'Description:' | sed 's/^[ ]*//g' | tr '\n' ':')
+    str=$(pactl list sinks | grep -E "Description:"  | sed 's/^[\t]*//g' | awk -F 'Description: ' '{print $2}' | tr '\n' ':')
     IFS=":"
     arr=($str)
-    dunstify -r 9527 ${arr[-1]} "$(update)" -i audio-volume-medium
+    notify-send -r 9527 ${arr[-1]} "$(update)" -i audio-volume-medium
 }
 
 
