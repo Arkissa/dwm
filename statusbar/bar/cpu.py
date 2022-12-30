@@ -1,6 +1,7 @@
 #!/bin/python3
 
 import os
+import datetime
 import subprocess
 import psutil
 import re
@@ -21,7 +22,7 @@ class MyCpu:
             case _: self.click(args[1])
 
     def update(self) -> None:
-        self.icon = "閭"
+        cpu_icon = "閭"
         cpu_usage = psutil.cpu_percent()
         cpu = round(cpu_usage)
         temps_dict = psutil.sensors_temperatures()
@@ -39,7 +40,7 @@ class MyCpu:
         ],
                          stdout=subprocess.PIPE).communicate()
 
-        cpu = cpu < 10 and f"{self.icon} 0{str(cpu)}%" or f"{self.icon} {str(cpu)}%"
+        cpu = cpu < 10 and f"{cpu_icon} 0{str(cpu)}%" or f"{cpu_icon} {str(cpu)}%"
 
         text = f" {cpu} | {temps_icon} {temps}°C "
 
@@ -57,10 +58,36 @@ class MyCpu:
             f.writelines(tmp)
 
     def notify(self) -> None:
-        self.update()
+        boot_time = psutil.boot_time()
+        threads_count = 0
+        process_count = 0
+        for process in psutil.process_iter():
+            threads_count += process.num_threads()
+            process_count += 1
+
+        speed = round(psutil.cpu_freq().current / 1000, 2)
+
+        cpu_usage = round(psutil.cpu_percent())
+        cpu_usage = cpu_usage < 10 and f"0{str(cpu_usage)}%" or f"{str(cpu_usage)}%"
+
+        run_time = datetime.datetime.now() - datetime.datetime.fromtimestamp(boot_time)
+        days = run_time.days
+        days = days < 10 and f"0{str(days)}" or days
+
+        hours = run_time.seconds // 3600
+        hours = hours < 10 and f"0{str(hours)}" or hours
+
+        miuntes = (run_time.seconds % 3600) // 60
+        miuntes = miuntes < 10 and f"0{miuntes}" or miuntes
+
+        seconds = run_time.seconds % 60
+        seconds = seconds < 10 and f"0{seconds}" or seconds
+
+        uptime = f"{days}:{hours}:{miuntes}:{seconds}"
+
         subprocess.Popen([
             "/bin/bash", "-c",
-            "notify-send \"閭 CPU tops\" \"\n$(ps axch -o cmd:15,%cpu --sort=-%cpu | head)\\n\\n(100% per core)\" -r 9527"
+            f"notify-send \"閭 CPU tops\" \"<p>使用率: {cpu_usage}</p><br><p>速度: {speed}GHz</p><br><p>进程数: {process_count}</p><br><p>线程数: {threads_count}</p><br><p>运行时间: {uptime}</p>\" -r 9527"
         ],
                          stdout=subprocess.PIPE).communicate()
 

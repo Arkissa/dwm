@@ -25,20 +25,11 @@ class MyBat:
             9: '',
             10: '',
         }
-
-        match args[0]:
-            case "update": self.update()
-            case "notify": self.notify()
-            case _: self.click(args[1])
-
-    def update(self) -> None:
-        p = subprocess.Popen(['/bin/acpi', '-b'], stdout=subprocess.PIPE)
-        byte, _ = p.communicate()
+        byte, _ = subprocess.Popen(['/bin/acpi', '-b'], stdout=subprocess.PIPE).communicate()
         stdout = byte.decode()
         stdout = stdout.replace("Battery 0: ", "")
         stdout = re.sub(r"\w+$", "", stdout, re.I)
         stdout = stdout.split("\n")[0].split(",")
-        text, remaining = "", ""
 
         _ = len(stdout) < 3 and stdout.append("")
 
@@ -49,9 +40,16 @@ class MyBat:
 
         remaining = int(int(remaining) * 0.1)
         charge_icon = self.status != "Discharging" and remaining < 9 and "ﮣ" or ""
-        self.icon = self.bat[remaining] + charge_icon
+        self.icon = charge_icon + self.bat[remaining]
 
-        text = f" {self.icon}{self.remaining} "
+        match args[0]:
+            case "update": self.update()
+            case "notify": self.notify()
+            case _: self.click(args[1])
+
+    def update(self) -> None:
+
+        text = f" {self.icon}{self.remaining:4} "
 
         print(text)
         with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
@@ -62,22 +60,17 @@ class MyBat:
             for line in lines:
                 _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
 
-            tmp.append(f"{self.this} = \"{self.color}{self.signal}{text}|{self.s2d_reset}\"\n")
+            tmp.append(f"{self.this} = \"{self.color}{self.signal}{text}{self.s2d_reset}\"\n")
             f.truncate()
             f.writelines(tmp)
 
     def notify(self) -> None:
-        self.update()
-
-        remaining: str = self.status != "Full" and f"\n剩余: {self.icon}{self.remaining}" or ""
+        remaining: str = self.status != "Full" and "\n剩余: " + self.icon + self.remaining or ""
         time: str = self.time and f"\n可用时间: {self.time}" or ""
 
         subprocess.Popen([
-            "/usr/local/bin/dunstify",
-            "Battery\n"
-            f"状态: {self.status}{remaining}{time}",
-            "-r",
-            "9527"
+            "/bin/bash", "-c",
+            f"notify-send -r 9527 \"Battery\" \"<p>状态: {self.status}{remaining}{time}</p>\"",
         ]).communicate()
 
     def click(self, mode) -> None:

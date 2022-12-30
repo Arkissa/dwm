@@ -3,7 +3,7 @@ dwm
 .ccls-cache/
 compile_commands.json
 .cache
-statusbar/temp
+statusbar/tmp.p
 statusbar/wifilist
 result/
 statusbar/wifilist

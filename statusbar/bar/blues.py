@@ -82,7 +82,6 @@ class MyBlues:
             f.writelines(tmp)
 
     def notify(self) -> None:
-        self.update()
         msg = self.blues_info == "Missing device address argument" and "没有连接任何设备" \
             or f"蓝牙名: {self.blues_name}\nMAC: {self.blues_mac}"
         subprocess.Popen([

@@ -2,7 +2,7 @@
 
 import os
 import subprocess
-from datetime import datetime
+import datetime
 import re
 
 
@@ -35,7 +35,7 @@ class MyDate:
             case _: self.click(args[1])
 
     def update(self) -> None:
-        now: datetime = datetime.now()
+        now = datetime.datetime.now()
         self.time: str = now.strftime("%Y/%m/%d %H:%M:%S")
         minute = now.strftime("%I")
 
@@ -50,12 +50,11 @@ class MyDate:
             for line in lines:
                 _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
 
-            tmp.append(f"{self.this} = \"{self.color}{self.signal}{text}{self.s2d_reset}\"\n")
+            tmp.append(f"{self.this} = \"{self.color}{self.signal}{text}|{self.s2d_reset}\"\n")
             f.truncate()
             f.writelines(tmp)
 
     def notify(self) -> None:
-        self.update()
         subprocess.Popen([
             "/bin/bash", "-c",
             "notify-send \"  Calendar\" \"\n$(cal --color=always | sed 1,2d | sed 's/..7m/<b><span color=\"#4F5C80\">/;s/..27m/<\\/span><\\/b>/' )\" -r 9527"

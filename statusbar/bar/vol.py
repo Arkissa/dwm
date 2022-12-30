@@ -19,14 +19,13 @@ class MyVol:
             case "notify": self.notify()
             case _: self.click(args[1])
 
-    def update(self):
+    def update(self) -> None:
         byte, _ = subprocess.Popen(['/bin/pactl', 'info'],
                                    stdout=subprocess.PIPE).communicate()
         sink_stdout = byte.decode()
         sink_stdout = re.search("Default Sink: .*", sink_stdout)
-        # stdout = stdout.replace("Default Sink: ", "")
         self.sink_stdout = sink_stdout and sink_stdout.group().replace(
-            "\n", "").replace("Default Sink: ", "")
+            "\n", "").replace("Default Sink: ", "").replace("\n", "")
 
         byte, _ = subprocess.Popen([
             '/bin/bash', '-c',
@@ -44,12 +43,12 @@ class MyVol:
 
         self.vol, self.icon = \
             not mute_stdout and ("--", "ﱝ") \
-            or vol == 0 and ("00", "婢") \
-            or vol <= 10 and ("0" + str(vol), "奄") \
-            or vol <= 50 and (str(vol), "奔") \
-            or (str(vol), "墳")
+            or vol == 0 and ("00" + "%", "婢") \
+            or vol <= 10 and ("0" + str(vol) + "%", "奄") \
+            or vol <= 50 and (str(vol) + "%", "奔") \
+            or (str(vol) + "%", "墳")
 
-        text = f" {self.icon} {self.vol}% "
+        text = f" {self.icon} {self.vol} "
 
         print(text)
         with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
@@ -75,16 +74,17 @@ class MyVol:
         card_name = byte.decode().split('\n')[0]
         subprocess.Popen([
             "/bin/bash", "-c",
-            f"notify-send -r 9527 '{card_name}' '{self.icon} {self.vol}%'"
+            f"notify-send -r 9527 '{card_name}' '{self.icon} {self.vol}'"
         ],
                          stdout=subprocess.PIPE).communicate()
 
     def click(self, mode):
         match mode:
             case "L": self.notify()
-            case "M": pass
-            case "R":
-                subprocess.Popen(
+            case "M": subprocess.Popen(
+                    ["/bin/bash", "-c", "pactl set-sink-mute @DEFAULT_SINK@ toggle"],
+                ).communicate()
+            case "R": subprocess.Popen(
                     ["/bin/bash", "-c", "killall pavucontrol || pavucontrol &"],
                 ).communicate()
             case "U":

@@ -59,10 +59,7 @@ class MyLight:
 
         subprocess.Popen([
             "/bin/bash", "-c",
-            "Screen light"
-            f"{self.icon} {self.light}%",
-            "-r",
-            "9527"
+            f"notify-send -r 9527 \"Screen light\" \"{self.icon} {self.light}%\""
         ]).communicate()
 
     def click(self, mode) -> None:
