@@ -20,14 +20,15 @@ static const unsigned int baralpha       = 0xc0;      /* 状态栏透明度 */
 static const unsigned int borderalpha    = 0x1f4;      /* 边框透明度 */
 static const char *fonts[]               = { "Ubuntu Mono Nerd Font:style=medium:size=15", "monospace:size=13" };
 static const char *colors[][3]           = {          /* 颜色设置 ColFg, ColBg, ColBorder */ 
-    [SchemeNorm] = { "#bbbbbb", "#333333", "#444444" },
-    [SchemeSel] = { "#ffffff", "#334466", "#516FAB" },
+    [SchemeNorm] = { "#bbbbbb", "#334466", "#333333" },
+//   [SchemeSel] = { "#ffffff", "#333333", "#444444" },
+    [SchemeSel] = { "#ffffff", "#516FAB", "#5D78B9" },
     [SchemeSelGlobal] = { "#ffffff", "#37474F", "#FFC0CB" },
     [SchemeHid] = { "#dddddd", NULL, NULL },
     [SchemeSystray] = { NULL, "#516FAB", NULL },
-    [SchemeUnderline] = { "#7799AA", NULL, NULL }, 
-    [SchemeNormTag] = { "#bbbbbb", "#333333", NULL },
-    [SchemeSelTag] = { "#eeeeee", "#333333", NULL },
+    [SchemeUnderline] = { "#F999AA", NULL, NULL }, 
+    [SchemeNormTag] = { "#bbbbbb", "#334466", NULL },
+    [SchemeSelTag] = { "#eeeeee", "#516FAB", NULL },
 };
 static const unsigned int alphas[][3]    = {          /* 透明度设置 ColFg, ColBg, ColBorder */ 
     [SchemeNorm] = { OPAQUE, baralpha, borderalpha }, 

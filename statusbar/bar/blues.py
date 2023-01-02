@@ -10,7 +10,8 @@ class MyBlues:
         self.this = "blues"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
-        self.color = "^c#1A1A1A^^b#334466^"
+        # self.color = "^c#1A1A1A^^b#334466^"
+        self.color = "^c#1A1A1A^^b#516FAB^"
         self.signal = f"^s{self.this}^"
         self.blues_status, _ = subprocess.Popen(
             [
@@ -21,7 +22,7 @@ class MyBlues:
             stdout=subprocess.PIPE,
         ).communicate()
 
-        self.blues_name, _ = subprocess.Popen(
+        blues_name, _ = subprocess.Popen(
             [
                 "/bin/bash",
                 "-c",
@@ -29,9 +30,9 @@ class MyBlues:
             ],
             stdout=subprocess.PIPE,
         ).communicate()
-        self.blues_name = self.blues_name.decode().split("\n")[0]
+        self.blues_name = blues_name.decode().split("\n")[0]
 
-        self.blues_mac, _ = subprocess.Popen(
+        blues_mac, _ = subprocess.Popen(
             [
                 "/bin/bash",
                 "-c",
@@ -39,7 +40,7 @@ class MyBlues:
             ],
             stdout=subprocess.PIPE,
         ).communicate()
-        self.blues_mac = self.blues_mac.decode().split("\n")[0]
+        self.blues_mac = blues_mac.decode().split("\n")[0]
 
         self.blues_type, _ = subprocess.Popen(
             [
@@ -50,10 +51,10 @@ class MyBlues:
             stdout=subprocess.PIPE,
         ).communicate()
 
-        self.blues_info, _ = subprocess.Popen(
+        blues_info, _ = subprocess.Popen(
             ["/bin/bash", "-c", "bluetoothctl info"], stdout=subprocess.PIPE
         ).communicate()
-        self.blues_info = self.blues_info.decode().split("\n")[0]
+        self.blues_info = blues_info.decode().split("\n")[0]
 
         match args[0]:
             case "update":
@@ -103,36 +104,43 @@ class MyBlues:
         msg = (
             self.blues_info == "Missing device address argument"
             and "没有连接任何设备"
-            or f"蓝牙名: {self.blues_name}\nMAC: {self.blues_mac}"
+            or f"蓝牙名: {self.blues_name}{self.blues_bettery()}\nMAC: {self.blues_mac}"
         )
+
         subprocess.Popen(
-            ["/bin/bash", "-c", f"notify-send -r 9527 ' bluetooth\n{'-' * 20}' '{msg}'"],
-            stdout=subprocess.PIPE,
-        ).communicate()
+            [
+                "/bin/bash",
+                "-c",
+                f"notify-send -r 9527 ' bluetooth' '{msg}'",
+            ]
+        )
+
+    def blues_bettery(self):
+        battery = subprocess.check_output(
+            [
+                "/bin/bash",
+                "-c",
+                f"upower -i /org/freedesktop/UPower/devices/headset_dev_{self.blues_mac.replace(':', '_')}",
+            ]
+        )
+        battery = battery != b"" and battery.decode() or ""
+        battery = re.findall(r"\w+%", battery)[0]
+
+        return battery != "" and "\n电量: " + battery or ""
 
     def toggle(self):
         _ = (
             self.blues_status.decode() == "no\n"
-            and subprocess.Popen(
-                ["/bin/bash", "-c", "bluetoothctl power on"], stdout=subprocess.PIPE
-            ).communicate()
-            or subprocess.Popen(
-                ["/bin/bash", "-c", "bluetoothctl power off"], stdout=subprocess.PIPE
-            ).communicate()
+            and subprocess.Popen(["/bin/bash", "-c", "bluetoothctl power on"])
+            or subprocess.Popen(["/bin/bash", "-c", "bluetoothctl power off"])
         )
 
     def click(self, mode):
         match mode:
             case "L":
                 self.notify()
-            case "M":
-                self.toggle()
             case "R":
                 subprocess.Popen(
                     ["/bin/bash", "-c", "killall blueberry || blueberry &"],
                     stdout=subprocess.PIPE,
                 ).communicate()
-            case "U":
-                pass
-            case "D":
-                pass

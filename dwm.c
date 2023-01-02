@@ -1047,7 +1047,8 @@ drawbar(Monitor *m)
     }
     empty_w = m->ww - x - status_w - system_w; // 最后多加了一个w
     if (empty_w > 0) {
-        drw_setscheme(drw, scheme[SchemeHid]);
+        // drw_setscheme(drw, scheme[SchemeHid]);
+        drw_setscheme(drw, scheme[SchemeNorm]);
         drw_rect(drw, x, 0, empty_w, bh, 1, 1);
     }
 
@@ -2111,12 +2112,12 @@ resizeclient(Client *c, int x, int y, int w, int h)
     c->oldh = c->h; c->h = wc.height = h;
     wc.border_width = c->bw;
 
-    if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next)))
-            && !c->isfullscreen && !c->isfloating) {
-        c->w = wc.width += c->bw * 2;
-        c->h = wc.height += c->bw * 2;
-        wc.border_width = 0;
-    }
+    // if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next)))
+            // && !c->isfullscreen && !c->isfloating) {
+        // c->w = wc.width += c->bw * 2;
+        // c->h = wc.height += c->bw * 2;
+        // wc.border_width = 0;
+    // }
     XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
     configure(c);
     XSync(dpy, False);

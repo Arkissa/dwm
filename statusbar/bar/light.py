@@ -10,7 +10,8 @@ class MyLight:
         self.this = "light"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
-        self.color = "^c#1A1A1A^^b#334467^"
+        # self.color = "^c#1A1A1A^^b#334467^"
+        self.color = "^c#1A1A1A^^b#516FAB^"
         self.signal = f"^s{self.this}^"
         self.map = {
             0: "",
@@ -66,7 +67,7 @@ class MyLight:
             [
                 "/bin/bash",
                 "-c",
-                f'notify-send -r 9527 " Screen light\n{"-" * 20}" "{self.icon} {self.light}%"',
+                f'notify-send -r 9527 -u low -h int:value:{self.light} " Screen light[{self.icon} {self.light}%]"',
             ]
         ).communicate()
 

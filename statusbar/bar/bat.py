@@ -10,7 +10,8 @@ class MyBat:
         self.this = "bat"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
-        self.color = "^c#1A1A1A^^b#334467^"
+        # self.color = "^c#1A1A1A^^b#334467^"
+        self.color = "^c#1A1A1A^^b#516FAB^"
         self.signal = f"^s{self.this}^"
         self.bat = {
             0: "",
@@ -81,7 +82,7 @@ class MyBat:
             [
                 "/bin/bash",
                 "-c",
-                f"notify-send -r 9527 \"  Battery\n{'-' * 20}\" \"<p>状态: {self.status}{remaining}{time}</p>\"",
+                f"notify-send -r 9527 \"  Battery\n\" \"<p>状态: {self.status}{remaining}{time}</p>\"",
             ]
         ).communicate()
 
@@ -89,11 +90,19 @@ class MyBat:
         match mode:
             case "L":
                 self.notify()
+            case "M":
+                subprocess.Popen(
+                    [
+                        "/bin/bash",
+                        "-c",
+                        "~/.config/rofi/bin/powermenu",
+                    ],
+                ).communicate()
             case "R":
                 subprocess.Popen(
                     [
                         "/bin/bash",
                         "-c",
-                        "killall mate-power-preferences || mate-power-preferences",
+                        "killall xfce4-power-manager-settings || xfce4-power-manager-settings",
                     ],
                 ).communicate()

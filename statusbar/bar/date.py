@@ -11,7 +11,8 @@ class MyDate:
         self.this = "date"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
-        self.color = "^c#1A1A1A^^b#334466^"
+        # self.color = "^c#1A1A1A^^b#334466^"
+        self.color = "^c#1A1A1A^^b#516FAB^"
         self.signal = f"^s{self.this}^"
         self.icon = {
             "01": "",
