@@ -4,6 +4,8 @@ dwm
 compile_commands.json
 .cache
 statusbar/tmp*
+statusbar/*log
+statusbar/log
 statusbar/wifilist
 result/
 statusbar/wifilist

@@ -10,9 +10,10 @@ class MyBlues:
         self.this = "blues"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
-        # self.color = "^c#1A1A1A^^b#334466^"
-        self.color = "^c#1A1A1A^^b#516FAB^"
+        # self.color = "^c#1A1A1A^^b#516FAB^"
+        self.color = "^c#babbf1^^b#1a1b26^"
         self.signal = f"^s{self.this}^"
+
         self.blues_status, _ = subprocess.Popen(
             [
                 "/bin/bash",
@@ -55,6 +56,7 @@ class MyBlues:
             ["/bin/bash", "-c", "bluetoothctl info"], stdout=subprocess.PIPE
         ).communicate()
         self.blues_info = blues_info.decode().split("\n")[0]
+        self.handle()
 
         match args[0]:
             case "update":
@@ -64,7 +66,7 @@ class MyBlues:
             case _:
                 self.click(args[1])
 
-    def update(self) -> None:
+    def handle(self):
         blues = [self.blues_status.decode() == "yes\n" and "" or ""]
 
         blues_type = (
@@ -81,9 +83,11 @@ class MyBlues:
             self.blues_name = "--"
             blues = [""]
 
-        blues_icon = " ".join(blues)
+        self.blues_icon = " ".join(blues)
 
-        text = f" {blues_icon} {self.blues_name} "
+    def update(self) -> None:
+
+        text = f" {self.blues_icon} {self.blues_name} "
 
         print(text)
         with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
@@ -95,7 +99,7 @@ class MyBlues:
                 _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
 
             tmp.append(
-                f'{self.this} = "{self.color}{self.signal}{text}|{self.s2d_reset}"\n'
+                f'{self.this} = "{self.color}{self.signal}{text}{self.s2d_reset}"\n'
             )
             f.truncate()
             f.writelines(tmp)
@@ -116,6 +120,19 @@ class MyBlues:
         )
 
     def blues_bettery(self):
+        bat = {
+            0: "",
+            1: "",
+            2: "",
+            3: "",
+            4: "",
+            5: "",
+            6: "",
+            7: "",
+            8: "",
+            9: "",
+            10: "",
+        }
         battery = subprocess.check_output(
             [
                 "/bin/bash",
@@ -125,8 +142,9 @@ class MyBlues:
         )
         battery = battery != b"" and battery.decode() or ""
         battery = re.findall(r"\w+%", battery)[0]
+        num = battery != "" and int(battery.replace("%", "")) or 0
 
-        return battery != "" and "\n电量: " + battery or ""
+        return battery != "" and f"[{bat[int(num * 0.1)]} {battery}]" or ""
 
     def toggle(self):
         _ = (

@@ -11,8 +11,8 @@ class MyDate:
         self.this = "date"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
-        # self.color = "^c#1A1A1A^^b#334466^"
-        self.color = "^c#1A1A1A^^b#516FAB^"
+        # self.color = "^c#1A1A1A^^b#516FAB^"
+        self.color = "^c#babbf1^^b#1a1b26^"
         self.signal = f"^s{self.this}^"
         self.icon = {
             "01": "",
@@ -54,7 +54,7 @@ class MyDate:
                 _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
 
             tmp.append(
-                f'{self.this} = "{self.color}{self.signal}{text}|{self.s2d_reset}"\n'
+                f'{self.this} = "{self.color}{self.signal}{text}{self.s2d_reset}"\n'
             )
             f.truncate()
             f.writelines(tmp)
@@ -66,8 +66,7 @@ class MyDate:
                 "-c",
                 f'notify-send "  Calendar\n{"-" * 20}" "$(cal --color=always | sed 1,2d | sed \'s/..7m/<b><span color="#4F5C80">/;s/..27m/<\\/span><\\/b>/\')\n<b>{"-" * 20}</b>\n TODO\n$(cat ~/.todo.md | sed \'s/\\(- \\[x\\] \\)\\(.*\\)/<span color="#ff79c6">\\1<s>\\2<\\/s><\\/span>/\' | sed \'s/- \\[[ |x]\\] //\')" -r 9527',
             ],
-            stdout=subprocess.PIPE,
-        ).communicate()
+        )
 
     def todo(self):
         pid, _ = subprocess.Popen(
@@ -106,8 +105,7 @@ class MyDate:
                 "-c",
                 f"kill -9 {pid} || st -t statusutil_todo -g 50x15+$(({x} - 200))+$(({y} + 20)) -c noborder -e nvim ~/.todo.md ",
             ],
-            stdout=subprocess.PIPE,
-        ).communicate()
+        )
 
     def click(self, mode):
         match mode:

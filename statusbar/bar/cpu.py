@@ -12,8 +12,8 @@ class MyCpu:
         self.this = "cpu"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
-        # self.color = "^c#1A1A1A^^b#334466^"
-        self.color = "^c#1A1A1A^^b#516FAB^"
+        # self.color = "^c#1A1A1A^^b#516FAB^"
+        self.color = "^c#babbf1^^b#1a1b26^"
         self.signal = f"^s{self.this}^"
 
         match args[0]:
@@ -43,21 +43,17 @@ class MyCpu:
             or ""
         )
 
-        _ = (
-            temps >= 85
-            and subprocess.Popen(
-                [
-                    "/bin/bash",
-                    "-c",
-                    f'notify-send -r 9627 -u critical  "温度过高: {temps_icon} {temps}°C"',
-                ],
-                stdout=subprocess.PIPE,
-            ).communicate()
+        _ = temps >= 90 and subprocess.Popen(
+            [
+                "/bin/bash",
+                "-c",
+                f'notify-send -r 9627 -u critical  "温度过高: {temps_icon} {temps}°C"',
+            ],
         )
 
         cpu = cpu < 10 and f"{cpu_icon} 0{str(cpu)}%" or f"{cpu_icon} {str(cpu)}%"
 
-        text = f" {temps_icon} {temps}°C | {cpu} "
+        text = f" {temps_icon} {temps}°C  {cpu} "
 
         print(text)
         with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
@@ -69,7 +65,7 @@ class MyCpu:
                 _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
 
             tmp.append(
-                f'{self.this} = "{self.color}{self.signal}{text}|{self.s2d_reset}"\n'
+                f'{self.this} = "{self.color}{self.signal}{text}{self.s2d_reset}"\n'
             )
             f.truncate()
             f.writelines(tmp)
@@ -106,10 +102,9 @@ class MyCpu:
             [
                 "/bin/bash",
                 "-c",
-                f'notify-send "閭 CPU tops\n{"-" * 25}" "<p>使用率: {cpu_usage}</p><br><p>速度: {speed}GHz</p><br><p>进程数: {process_count}</p><br><p>线程数: {threads_count}</p><br><p>运行时间: {uptime}</p>" -r 9527',
+                f'notify-send "閭 CPU tops" "<p>使用率: {cpu_usage}</p><br><p>速度: {speed}GHz</p><br><p>进程数: {process_count}</p><br><p>线程数: {threads_count}</p><br><p>运行时间: {uptime}</p>" -r 9527',
             ],
-            stdout=subprocess.PIPE,
-        ).communicate()
+        )
 
     def btop(self):
         pid, _ = subprocess.Popen(
@@ -148,8 +143,7 @@ class MyCpu:
                 "-c",
                 f"kill -9 {pid} || st -t statusutil_btop -g 82x25+$(({x} - 200))+$(({y} + 20)) -c noborder -e btop",
             ],
-            stdout=subprocess.PIPE,
-        ).communicate()
+        )
 
     def click(self, mode):
         match mode:

@@ -10,9 +10,10 @@ class MyVol:
         self.this = "vol"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
-        # self.color = "^c#1A1A1A^^b#334466^"
-        self.color = "^c#1A1A1A^^b#516FAB^"
+        # self.color = "^c#1A1A1A^^b#516FAB^"
+        self.color = "^c#babbf1^^b#1a1b26^"
         self.signal = f"^s{self.this}^"
+        self.handle()
 
         match args[0]:
             case "update":
@@ -22,7 +23,7 @@ class MyVol:
             case _:
                 self.click(args[1])
 
-    def update(self) -> None:
+    def handle(self):
         byte, _ = subprocess.Popen(
             ["/bin/pactl", "info"], stdout=subprocess.PIPE
         ).communicate()
@@ -57,12 +58,14 @@ class MyVol:
             and ("--", "ﱝ")
             or vol == 0
             and ("00" + "%", "婢")
-            or vol <= 10
+            or vol < 10
             and ("0" + str(vol) + "%", "奄")
             or vol <= 50
             and (str(vol) + "%", "奔")
             or (str(vol) + "%", "墳")
         )
+
+    def update(self) -> None:
 
         text = f" {self.icon} {self.vol} "
 
@@ -76,14 +79,12 @@ class MyVol:
                 _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
 
             tmp.append(
-                f'{self.this} = "{self.color}{self.signal}{text}|{self.s2d_reset}"\n'
+                f'{self.this} = "{self.color}{self.signal}{text}{self.s2d_reset}"\n'
             )
             f.truncate()
             f.writelines(tmp)
 
     def notify(self):
-        self.update()
-
         byte, _ = subprocess.Popen(
             [
                 "/bin/bash",
@@ -97,10 +98,9 @@ class MyVol:
             [
                 "/bin/bash",
                 "-c",
-                f"notify-send -r 9527 -h int:value:{self.num} -u low ' {card_name}[{self.icon} {self.vol}]'",
+                f"notify-send -r 9527 -h int:value:{self.num} -h string:hlcolor:#7F7FFF ' {card_name}[{self.icon} {self.vol}]'",
             ],
-            stdout=subprocess.PIPE,
-        ).communicate()
+        )
 
     def click(self, mode):
         match mode:
@@ -109,18 +109,18 @@ class MyVol:
             case "M":
                 subprocess.Popen(
                     ["/bin/bash", "-c", "pactl set-sink-mute @DEFAULT_SINK@ toggle"],
-                ).communicate()
+                )
             case "R":
                 subprocess.Popen(
                     ["/bin/bash", "-c", "killall pavucontrol || pavucontrol &"],
-                ).communicate()
+                )
             case "U":
                 subprocess.Popen(
                     ["/bin/bash", "-c", "pactl set-sink-volume @DEFAULT_SINK@ +5%"],
-                ).communicate()
+                )
                 self.notify()
             case "D":
                 subprocess.Popen(
                     ["/bin/bash", "-c", "pactl set-sink-volume @DEFAULT_SINK@ -5%"],
-                ).communicate()
+                )
                 self.notify()

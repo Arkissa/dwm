@@ -108,8 +108,8 @@ class status_bar:
     def click(self, *args) -> None:
         if len(args) < 2:
             return
-        getattr(self.map[args[0]][0], self.map[args[0]][1])("click", args[1])
         self.update(args[0])
+        getattr(self.map[args[0]][0], self.map[args[0]][1])("click", args[1])
         self.refresh()
 
 

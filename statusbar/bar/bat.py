@@ -10,9 +10,20 @@ class MyBat:
         self.this = "bat"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
-        # self.color = "^c#1A1A1A^^b#334467^"
-        self.color = "^c#1A1A1A^^b#516FAB^"
+        self.color = "^c#babbf1^^b#1a1b26^"
+        # self.color = "^c#1A1A1A^^b#516FAB^"
         self.signal = f"^s{self.this}^"
+        self.handle()
+
+        match args[0]:
+            case "update":
+                self.update()
+            case "notify":
+                self.notify()
+            case _:
+                self.click(args[1])
+
+    def handle(self):
         self.bat = {
             0: "",
             1: "",
@@ -45,14 +56,6 @@ class MyBat:
         charge_icon = self.status != "Discharging" and remaining < 9 and "ﮣ" or ""
         self.icon = charge_icon + self.bat[remaining]
 
-        match args[0]:
-            case "update":
-                self.update()
-            case "notify":
-                self.notify()
-            case _:
-                self.click(args[1])
-
     def update(self) -> None:
 
         text = f" {self.icon}{self.remaining:4} "
@@ -73,18 +76,15 @@ class MyBat:
             f.writelines(tmp)
 
     def notify(self) -> None:
-        remaining: str = (
-            self.status != "Full" and "\n剩余: " + self.icon + self.remaining or ""
-        )
         time: str = self.time and f"\n可用时间: {self.time}" or ""
 
         subprocess.Popen(
             [
                 "/bin/bash",
                 "-c",
-                f"notify-send -r 9527 \"  Battery\n\" \"<p>状态: {self.status}{remaining}{time}</p>\"",
+                f'notify-send -r 9527 "  Battery[{self.icon}{self.remaining}]" "<p>状态: {self.status}{time}</p>"',
             ]
-        ).communicate()
+        )
 
     def click(self, mode) -> None:
         match mode:

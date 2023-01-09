@@ -20,15 +20,15 @@ static const unsigned int baralpha       = 0xc0;      /* 状态栏透明度 */
 static const unsigned int borderalpha    = 0x1f4;      /* 边框透明度 */
 static const char *fonts[]               = { "Ubuntu Mono Nerd Font:style=medium:size=15", "monospace:size=13" };
 static const char *colors[][3]           = {          /* 颜色设置 ColFg, ColBg, ColBorder */ 
-    [SchemeNorm] = { "#bbbbbb", "#334466", "#333333" },
+    [SchemeNorm] = { "#c0caf5", "#333333", "#444444" },
 //   [SchemeSel] = { "#ffffff", "#333333", "#444444" },
-    [SchemeSel] = { "#ffffff", "#516FAB", "#5D78B9" },
+    [SchemeSel] = { "#babbf1", "#37474F", "#5D78B9" },
     [SchemeSelGlobal] = { "#ffffff", "#37474F", "#FFC0CB" },
-    [SchemeHid] = { "#dddddd", NULL, NULL },
-    [SchemeSystray] = { NULL, "#516FAB", NULL },
+    [SchemeHid] = { "#c0caf5", "#1A1A1A", "#444444" },
+    [SchemeSystray] = { "#c0caf5", "#333333", NULL },
     [SchemeUnderline] = { "#F999AA", NULL, NULL }, 
-    [SchemeNormTag] = { "#bbbbbb", "#334466", NULL },
-    [SchemeSelTag] = { "#eeeeee", "#516FAB", NULL },
+    [SchemeNormTag] = { "#c0caf5", "#333333", NULL },
+    [SchemeSelTag] = { "#babbf1", "#37474F", NULL },
 };
 static const unsigned int alphas[][3]    = {          /* 透明度设置 ColFg, ColBg, ColBorder */ 
     [SchemeNorm] = { OPAQUE, baralpha, borderalpha }, 
@@ -141,11 +141,11 @@ static Key keys[] = {
     { MODKEY,     XK_l,           resizewin,        {.ui = H_EXPAND} },        /* super l    |  调整窗口 */
 
     /* spawn + SHCMD 执行对应命令(已下部分建议完全自己重新定义) */
-    { MODKEY,              XK_s,           togglescratch, SHCMD("alacritty -t scratchpad --class float") },          /* super s            | 打开scratch终端        */
-    { MODKEY,              XK_Return,      spawn, SHCMD("alacritty") },                                              /* super enter        | 打开st终端             */
-    { MODKEY,              XK_minus,       spawn, SHCMD("alacritty --class global") },                               /* super +            | 打开全局st终端         */
-    { MODKEY,              XK_space,       spawn, SHCMD("alacritty --class float") },                                /* super space        | 打开浮动st终端         */
-    { MODALT|ShiftMask,    XK_Return,      spawn, SHCMD("rofi -show tool -modi 'tool:~/scripts/rofi.py'") },         /* alt return         | rofi: 菜单             */
+    { MODKEY,              XK_s,           togglescratch, SHCMD("kitty -T scratchpad --class float") },          /* super s            | 打开scratch终端        */
+    { MODKEY,              XK_Return,      spawn, SHCMD("kitty") },                                              /* super enter        | 打开st终端             */
+    { MODKEY,              XK_minus,       spawn, SHCMD("kitty --class global") },                               /* super +            | 打开全局st终端         */
+    { MODKEY,              XK_space,       spawn, SHCMD("kitty --class float") },                                /* super space        | 打开浮动st终端         */
+    { MODALT|ShiftMask,    XK_Return,      spawn, SHCMD("rofi -show \"TOOL\" -modi 'TOOL:~/scripts/rofi.py' -theme \"$HOME\"/.config/rofi/config/tool.rasi") },         /* alt return         | rofi: 菜单             */
     { MODKEY|ControlMask,  XK_Return,      spawn, SHCMD("~/.config/rofi/bin/powermenu") },                           /* super shift return | rofi: 电源菜单         */
     { MODALT,              XK_Return,      spawn, SHCMD("~/.config/rofi/bin/launcher") },                            /* alt shift return   | rofi: 执行命令         */
     { MODKEY,              XK_p,           spawn, SHCMD("~/scripts/bin/blurlock.sh") },                              /* super p            | 锁定屏幕               */
@@ -153,8 +153,8 @@ static Key keys[] = {
     { MODKEY,              XK_F5,          spawn, SHCMD("~/scripts/bin/light.sh down") },                            /* super shift down   | 音量减                 */
     { MODKEY,              XK_F3,          spawn, SHCMD("~/scripts/bin/vol.sh up") },                                /* super shift up     | 音量加                 */
     { MODKEY,              XK_F2,          spawn, SHCMD("~/scripts/bin/vol.sh down") },                              /* super shift down   | 音量减                 */
+    { MODALT|ShiftMask,    XK_a,           spawn, SHCMD("~/.config/rofi/bin/screenshot") },                          /* super shift a      | 截图                   */
     { MODKEY|ShiftMask,    XK_a,           spawn, SHCMD("flameshot gui -c -p ~/Pictures/screenshots") },             /* super shift a      | 截图                   */
-    { MODKEY|ShiftMask,    XK_k,           spawn, SHCMD("~/scripts/screenkey.sh") },                                 /* super shift k      | 打开键盘输入显示       */
     { MODKEY|ShiftMask,    XK_q,           spawn, SHCMD("kill -9 $(xprop | grep _NET_WM_PID | awk '{print $3}')") }, /* super shift q      | 选中某个窗口并强制kill */
     { ShiftMask|ControlMask, XK_c,         spawn, SHCMD("xclip -o | xclip -selection c") },                          /* super shift c      | 进阶复制               */
 
@@ -174,7 +174,7 @@ static Key keys[] = {
     TAGKEYS(XK_0, 9,  "tencent-qq", 0)
     TAGKEYS(XK_w, 10, "/opt/apps/com.qq.weixin.deepin/files/run.sh", 0)
     TAGKEYS(XK_F1, 11, "pcmanfm", 0)
-    TAGKEYS(XK_n, 12, "vmware", 0)
+    TAGKEYS(XK_n, 12, "virt-manager", 0)
     TAGKEYS(XK_b, 13, "~/apps/burpsuite/run.sh", 0)
 };
 static Button buttons[] = {
