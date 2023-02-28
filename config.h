@@ -22,7 +22,7 @@ static const unsigned int snap           = 10;        /* 边缘依附宽度 */
 //static const unsigned int borderalpha    = 0x1f4;      /* 边框透明度 */
 static const unsigned int baralpha       = 0x3e8;      /* 状态栏透明度 */
 static const unsigned int borderalpha    = 0x3e8;      /* 边框透明度 */
-static const char *fonts[]               = { "JetBrainsMono Nerd Font:style=medium:size=13", "monospace:size=13" };
+static const char *fonts[]               = { "JetBrainsMono Nerd Font:style=medium:size=12", "monospace:size=13" };
 //static const char *fonts[]               = { "Monaco Nerd Font Complete Mono:style=medium:size=13", "monospace:size=13" };
 static const char *colors[][3]           = {          /* 颜色设置 ColFg, ColBg, ColBorder */ 
     [SchemeNorm] = { "#babbf1", "#1a1b26", "#444444" },
