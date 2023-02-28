@@ -53,12 +53,12 @@ class MyBat:
         remaining = self.remaining.split("%")[0]
 
         remaining = int(int(remaining) * 0.1)
-        charge_icon = self.status != "Discharging" and remaining < 9 and "ﮣ" or ""
+        charge_icon = self.status not in ("Discharging", "Full") and "ﮣ" or ""
         self.icon = charge_icon + self.bat[remaining]
 
     def update(self) -> None:
 
-        text = f" {self.icon}{self.remaining:4} "
+        text = f"{self.icon}{self.remaining:4} "
 
         print(text)
         with open(self.dwm + "/statusbar/tmp.py", "r+") as f:

@@ -13,6 +13,8 @@ from bar import cpu
 from bar import mem
 from bar import blues
 from bar import light
+from bar import hot
+from bar import disk
 
 
 class status_bar:
@@ -25,6 +27,8 @@ class status_bar:
             "mem": (mem, "MyMem"),
             "blues": (blues, "MyBlues"),
             "light": (light, "MyLight"),
+            "hot": (hot, "MyHot"),
+            "disk": (disk, "MyDisk"),
         }
         self.dwm = os.environ["DWM"]
         self.imp = False
@@ -35,7 +39,7 @@ class status_bar:
             self.update(*args[1:])
             self.refresh()
         elif args[0] == "updateall" or args[0] == "check":
-            self.update("bat", "vol", "date", "cpu", "mem", "blues", "light")
+            self.update("bat", "vol", "date", "cpu", "mem", "blues", "light", "hot", "disk")
             self.refresh()
         else:
             self.click(args[0], args[1])
@@ -53,11 +57,15 @@ class status_bar:
                 _ = not run % 5 and self.update("mem")
                 _ = not run % 2 and self.update("light")
                 _ = not run % 2 and self.update("blues")
-                _ = not run % 1 and self.update("date")
+                _ = not run % 60 and self.update("date")
+                _ = not run % 10 and self.update("hot")
+                _ = not run % 60 and self.update("disk")
 
                 self.refresh()
                 time.sleep(1)
                 self.imp = True
+            except UnicodeDecodeError:
+                os.remove(self.dwm + "/statusbar/tmp.py")
             except FileNotFoundError:
                 open(self.dwm + "/statusbar/tmp.py", "w").close()
             except Exception as err:
@@ -81,7 +89,7 @@ class status_bar:
                 [
                     "/bin/bash",
                     "-c",
-                    f'xsetroot -name "{tmp.date}{tmp.cpu}{tmp.mem}{tmp.light}{tmp.vol}{tmp.blues}{tmp.bat:10}"',
+                    f'xsetroot -name "{tmp.hot}{tmp.date}{tmp.cpu}{tmp.mem}{tmp.disk}{tmp.light}{tmp.vol}{tmp.blues}{tmp.bat}"',
                 ]
             )
 

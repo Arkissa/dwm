@@ -47,7 +47,7 @@ class MyLight:
 
     def update(self) -> None:
 
-        text = f" {self.icon} {self.light}% "
+        text = f"{self.icon} {self.light}% "
 
         print(text)
         with open(self.dwm + "/statusbar/tmp.py", "r+") as f:

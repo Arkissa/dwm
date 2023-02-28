@@ -43,17 +43,9 @@ class MyCpu:
             or ""
         )
 
-        _ = temps >= 90 and subprocess.Popen(
-            [
-                "/bin/bash",
-                "-c",
-                f'notify-send -r 9627 -u critical  "温度过高: {temps_icon} {temps}°C"',
-            ],
-        )
-
         cpu = cpu < 10 and f"{cpu_icon} 0{str(cpu)}%" or f"{cpu_icon} {str(cpu)}%"
 
-        text = f" {temps_icon} {temps}°C  {cpu} "
+        text = f"{temps_icon} {temps}°C {cpu} "
 
         print(text)
         with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
@@ -141,7 +133,7 @@ class MyCpu:
             [
                 "/bin/bash",
                 "-c",
-                f"kill -9 {pid} || st -t statusutil_btop -g 82x25+$(({x} - 200))+$(({y} + 20)) -c noborder -e btop",
+                f"kill -9 {pid} || st -t statusutil_btop -g 140x25+$(({x} - 200))+$(({y} + 20)) -c noborder -e btop",
             ],
         )
 

@@ -3,6 +3,7 @@
 import os
 import subprocess
 import datetime
+import calendar
 import re
 
 
@@ -11,7 +12,6 @@ class MyDate:
         self.this = "date"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
-        # self.color = "^c#1A1A1A^^b#516FAB^"
         self.color = "^c#babbf1^^b#1a1b26^"
         self.signal = f"^s{self.this}^"
         self.icon = {
@@ -39,10 +39,10 @@ class MyDate:
 
     def update(self) -> None:
         now = datetime.datetime.now()
-        self.time: str = now.strftime("%Y/%m/%d %H:%M:%S")
+        self.time: str = f'{now.strftime("%R")}  {now.strftime("%m/%d")}'
         minute = now.strftime("%I")
 
-        text = f" {self.icon[minute]} {self.time} "
+        text = f"{self.icon[minute]} {self.time} "
 
         print(text)
         with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
@@ -60,11 +60,30 @@ class MyDate:
             f.writelines(tmp)
 
     def notify(self) -> None:
+        now = datetime.datetime.now()
+        cal = (
+            calendar.month(now.year, now.month)
+            .replace(str(now.day), f'<b><span color="#4F5C80">{now.day}</span></b>', 1)
+            .replace("\n", "\\n")
+        )
+        todo = ""
+        home = os.environ["HOME"]
+        with open(home + "/.todo.md") as f:
+            r = re.compile(r"- \[x\].*")
+            for i in f.readlines():
+                i = i.replace("- [ ] ", "")
+                todo += r.sub(
+                    '<s><span color="#4F5C80">{}</span></s>'.format(
+                        i.replace("\n", "").replace("- [x] ", "")
+                    ),
+                    i,
+                )
+
         subprocess.Popen(
             [
                 "/bin/bash",
                 "-c",
-                f'notify-send "  Calendar\n{"-" * 20}" "$(cal --color=always | sed 1,2d | sed \'s/..7m/<b><span color="#4F5C80">/;s/..27m/<\\/span><\\/b>/\')\n<b>{"-" * 20}</b>\n TODO\n$(cat ~/.todo.md | sed \'s/\\(- \\[x\\] \\)\\(.*\\)/<span color="#ff79c6">\\1<s>\\2<\\/s><\\/span>/\' | sed \'s/- \\[[ |x]\\] //\')" -r 9527',
+                f"notify-send '  Calendar\n{'-' * 20}' '{cal}\n<b>{'-' * 20}</b>\n TODO\n{todo}' -r 9527",
             ],
         )
 

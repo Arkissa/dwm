@@ -11,3 +11,4 @@ result/
 statusbar/wifilist
 statusbar/_*
 statusbar/*/_*
+statusbar/bar/ho*.py

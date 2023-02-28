@@ -67,7 +67,16 @@ class MyBlues:
                 self.click(args[1])
 
     def handle(self):
-        blues = [self.blues_status.decode() == "yes\n" and "" or ""]
+        blues = []
+        if self.blues_info == "Missing device address argument":
+            self.blues_name = "OPEN"
+            blues = [""]
+
+        if self.blues_status.decode() == "yes\n":
+            blues = [""]
+        else:
+            self.blues_name = "CLOSE"
+            blues = [""]
 
         blues_type = (
             self.blues_type.decode() == "input-mouse\n"
@@ -77,17 +86,13 @@ class MyBlues:
             or ""
         )
 
-        blues.append(blues_type)
-
-        if self.blues_info == "Missing device address argument":
-            self.blues_name = "--"
-            blues = [""]
+        _ = self.blues_name not in ("OPEN", "CLOSE") and blues.append(blues_type) or ""
 
         self.blues_icon = " ".join(blues)
 
     def update(self) -> None:
 
-        text = f" {self.blues_icon} {self.blues_name} "
+        text = f"{self.blues_icon} {self.blues_name} "
 
         print(text)
         with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
@@ -157,6 +162,8 @@ class MyBlues:
         match mode:
             case "L":
                 self.notify()
+            case "M":
+                self.toggle()
             case "R":
                 subprocess.Popen(
                     ["/bin/bash", "-c", "killall blueberry || blueberry &"],

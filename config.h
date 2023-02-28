@@ -1,9 +1,9 @@
 #include <X11/XF86keysym.h>
 
-static int showsystray                   = 0;         /* 是否显示托盘栏 */
+static int showsystray                   = 1;         /* 是否显示托盘栏 */
 static const int newclientathead         = 0;         /* 定义新窗口在栈顶还是栈底 */
-static const unsigned int borderpx       = 6;         /* 窗口边框大小 */
-static const unsigned int systraypinning = 1;         /* 托盘跟随的显示器 0代表不指定显示器 */
+static const unsigned int borderpx       = 1;         /* 窗口边框大小 */
+static const unsigned int systraypinning = 0;         /* 托盘跟随的显示器 0代表不指定显示器 */
 static const unsigned int systrayspacing = 1;         /* 托盘间距 */
 static int gappi                         = 12;        /* 窗口与窗口 缝隙大小 */
 static int gappo                         = 12;        /* 窗口与边缘 缝隙大小 */
@@ -11,24 +11,29 @@ static const int _gappo                  = 12;        /* 窗口与窗口 缝隙�
 static const int _gappi                  = 12;        /* 窗口与边缘 缝隙大小 不可变 用于恢复时的默认值 */
 static const int overviewgappi           = 24;        /* overview时 窗口与边缘 缝隙大小 */
 static const int overviewgappo           = 60;        /* overview时 窗口与窗口 缝隙大小 */
+static const int vertpad                 = 10;       /* vertical padding of bar */
+static const int sidepad                 = 10;       /* horizontal padding of bar */
 static const int showbar                 = 1;         /* 是否显示状态栏 */
 static const int topbar                  = 1;         /* 指定状态栏位置 0底部 1顶部 */
 static const float mfact                 = 0.5;         /* 主工作区 大小比例 */
 static const int   nmaster               = 1;         /* 主工作区 窗口数量 */
 static const unsigned int snap           = 10;        /* 边缘依附宽度 */
-static const unsigned int baralpha       = 0xc0;      /* 状态栏透明度 */
-static const unsigned int borderalpha    = 0x1f4;      /* 边框透明度 */
-static const char *fonts[]               = { "Ubuntu Mono Nerd Font:style=medium:size=15", "monospace:size=13" };
+//static const unsigned int baralpha       = 0xc0;      /* 状态栏透明度 */
+//static const unsigned int borderalpha    = 0x1f4;      /* 边框透明度 */
+static const unsigned int baralpha       = 0x3e8;      /* 状态栏透明度 */
+static const unsigned int borderalpha    = 0x3e8;      /* 边框透明度 */
+static const char *fonts[]               = { "JetBrainsMono Nerd Font:style=medium:size=13", "monospace:size=13" };
+//static const char *fonts[]               = { "Monaco Nerd Font Complete Mono:style=medium:size=13", "monospace:size=13" };
 static const char *colors[][3]           = {          /* 颜色设置 ColFg, ColBg, ColBorder */ 
-    [SchemeNorm] = { "#c0caf5", "#333333", "#444444" },
-//   [SchemeSel] = { "#ffffff", "#333333", "#444444" },
-    [SchemeSel] = { "#babbf1", "#37474F", "#5D78B9" },
+    [SchemeNorm] = { "#babbf1", "#1a1b26", "#444444" },
+    [SchemeSel] = { "#ffffff", "#1a1b26", "#5D78B9" },
     [SchemeSelGlobal] = { "#ffffff", "#37474F", "#FFC0CB" },
-    [SchemeHid] = { "#c0caf5", "#1A1A1A", "#444444" },
-    [SchemeSystray] = { "#c0caf5", "#333333", NULL },
-    [SchemeUnderline] = { "#F999AA", NULL, NULL }, 
-    [SchemeNormTag] = { "#c0caf5", "#333333", NULL },
-    [SchemeSelTag] = { "#babbf1", "#37474F", NULL },
+    [SchemeHid] = { "#c0caf5", "#1a1b26", "#444444" },
+    [SchemeSystray] = { "#c0caf5", "#1a1b26", NULL },
+    [SchemeUnderline] = { "#bafbf1", NULL, NULL }, 
+    [SchemeNormTag] = { "#babbf1", "#1a1b26", NULL },
+    [SchemeSelTag] = { "#babbf1", "#1a1b26", NULL },
+    [SchemeBarEmpty] = { NULL, "#111111", NULL },
 };
 static const unsigned int alphas[][3]    = {          /* 透明度设置 ColFg, ColBg, ColBorder */ 
     [SchemeNorm] = { OPAQUE, baralpha, borderalpha }, 
@@ -36,6 +41,8 @@ static const unsigned int alphas[][3]    = {          /* 透明度设置 ColFg, 
     [SchemeSelGlobal] = { OPAQUE, baralpha, borderalpha },
     [SchemeNormTag] = { OPAQUE, baralpha, borderalpha }, 
     [SchemeSelTag] = { OPAQUE, baralpha, borderalpha },
+    [SchemeBarEmpty] = { NULL, 0xa0a, NULL },
+    [SchemeStatusText] = { OPAQUE, baralpha, borderalpha },
 };
 
 /* 自定义脚本位置 */
@@ -48,27 +55,37 @@ static const char scratchpadname[] = "scratchpad";
 /* 自定义tag名称 */
 /* 自定义特定实例的显示状态 */
 //            ﮸  ﭮ 切
-// 对应的tag序号以及快捷键:   0:1  1:2  2:3  3:4  4:5  5:c  6:m  7:6  8:9  9:0  10:w 11:f1
-static const char *tags[] = { "", "", "", "", "", "", " ", "", "ﭮ", "ﬄ", "﬐", " ", "", ""};
+// 对应的tag序号以及快捷键:   0:1  1:2  2:3  3:4  4:5  5:c  6:m  7:0  8:w  9:d  10:d
+static const char *tags[] = { "", "", "", "", "", "", "", "ﬄ", "﬐", "", ""};
 static const Rule rules[] = {
-    /* class                 instance              title             tags mask     isfloating  isglobal    isnoborder monitor */
-    {"chrome",               NULL,                 NULL,             1 << 5,       0,          0,          0,        -1 },
-    {"Chromium",             NULL,                 NULL,             1 << 5,       0,          0,          0,        -1 },
-    {"music",                NULL,                 NULL,             1 << 6,       1,          0,          1,        -1 },
-    {"TelegramDesktop",      NULL,                 NULL,             1 << 7,       0,          0,          0,        -1 },
-    { NULL,                 "discord",             NULL,             1 << 8,       0,          0,          0,        -1 },
-    { NULL,                 "icalingua",           NULL,             1 << 9,       0,          0,          1,        -1 },
-    { NULL,                 "wechat",              NULL,             1 << 10,      0,          0,          0,        -1 },
-    { NULL,                 "wxwork",              NULL,             1 << 11,      0,          0,          0,        -1 },
-    { NULL,                  NULL,                "broken",          0,            1,          0,          0,        -1 },
-    { NULL,                  NULL,                "图片查看",        0,            1,          0,          0,        -1 },
-    { NULL,                  NULL,                "图片预览",        0,            1,          0,          0,        -1 },
-    { NULL,                  NULL,                "crx_",            0,            1,          0,          0,        -1 },
-    {"flameshot",            NULL,                 NULL,             0,            1,          0,          0,        -1 },
-    {"wemeetapp",            NULL,                 NULL,             TAGMASK,      1,          1,          0,        -1 }, // 腾讯会议在切换tag时有诡异bug导致退出 变成global来规避该问题
-    {"float",                NULL,                 NULL,             0,            1,          0,          0,        -1 }, // 特殊class client默认浮动
-    {"noborder",             NULL,                 NULL,             0,            1,          0,          1,        -1 }, // 特殊class client默认无边框
-    {"global",               NULL,                 NULL,             TAGMASK,      1,          1,          0,        -1 }, // 特殊class client全局于所有tag
+    /* class                 instance              title                tags mask     isfloating  isglobal    isnoborder monitor */
+    {"chrome",               NULL,                 NULL,                1 << 5,       0,          0,          0,        -1 },
+    {"Chromium",             NULL,                 NULL,                1 << 5,       0,          0,          0,        -1 },
+    {"music",                NULL,                 NULL,                1 << 6,       1,          0,          1,        -1 },
+    {"TelegramDesktop",      NULL,                 NULL,                1 << 7,       0,          0,          0,        -1 },
+    { NULL,                 "wechat",              NULL,                1 << 8,       1,          0,          0,        -1 },
+//    { NULL,                 "wxwork",              NULL,                1 << 11,      0,          0,          0,        -1 },
+    { NULL,                  NULL,                "broken",             0,            1,          0,          0,        -1 },
+    { NULL,                  NULL,                "图片查看",           0,            1,          0,          0,        -1 },
+    { NULL,                  NULL,                "图片预览",           0,            1,          0,          0,        -1 },
+    { NULL,                  NULL,                "虚拟系统管理器",     0,            1,          0,          0,        -1 },
+    { NULL,                  NULL,                "防火墙配置",         0,            1,          0,          0,        -1 },
+    { NULL,                  NULL,                "自定义外观和体验",   0,            1,          0,          0,        -1 },
+    { NULL,                  NULL,                "Qt5 配置工具",       0,            1,          0,          0,        -1 },
+    { NULL,                  NULL,                "Fcitx 配置",         0,            1,          0,          0,        -1 },
+    { NULL,                  NULL,                "crx_",               0,            1,          0,          0,        -1 },
+    {"flameshot",            NULL,                 NULL,                0,            1,          0,          0,        -1 },
+    {"wemeetapp",            NULL,                 NULL,                TAGMASK,      1,          1,          0,        -1 }, // 腾讯会议在切换tag时有诡异bug导致退出 变成global来规避该问题
+    {"fm",                   NULL,                 NULL,                TAGMASK,      1,          0,          0,        -1 }, // pcmanfm 浮动
+    {NULL,                   NULL,                 "Burp Suite",        0,            1,          0,          0,        -1 }, // Burp Suite 浮动
+    {"tlpui",                "tlpui",              "Tlp-UI",            0,            1,          0,          0,        -1 }, // Burp Suite 浮动
+    {NULL,                   NULL,                 "Timeshift",         0,            1,          0,          0,        -1 }, // Burp Suite 浮动
+    {NULL,                   NULL,                 "百度网盘",          0,            1,          0,          0,        -1 }, // Burp Suite 浮动
+    {NULL,                   NULL,                 "音量控制",          0,            1,          0,          0,        -1 }, // Burp Suite 浮动
+    {NULL,                   NULL,                 "蓝牙",              0,            1,          0,          0,        -1 }, // Burp Suite 浮动
+    {"float",                NULL,                 NULL,                0,            1,          0,          0,        -1 }, // 特殊class client默认浮动
+    {"noborder",             NULL,                 NULL,                0,            1,          0,          1,        -1 }, // 特殊class client默认无边框
+    {"global",               NULL,                 NULL,                TAGMASK,      1,          1,          0,        -1 }, // 特殊class client全局于所有tag
 };
 static const char *overviewtag = "OVERVIEW";
 static const Layout overviewlayout = { "舘",  overview };
@@ -114,10 +131,10 @@ static Key keys[] = {
     { MODKEY,              XK_f,            fullscreen,       {0} },                     /* super f            |  开启/关闭 全屏 */
     { MODKEY|ShiftMask,    XK_f,            togglebar,        {0} },                     /* super shift f      |  开启/关闭 状态栏 */
     { MODKEY,              XK_g,            toggleglobal,     {0} },                     /* super g            |  开启/关闭 全局 */
-    { MODKEY,              XK_e,            incnmaster,       {.i = +1} },               /* super e            |  改变主工作区窗口数量 (1 2中切换) */
+    { MODKEY,              XK_c,            incnmaster,       {.i = +1} },               /* super e            |  改变主工作区窗口数量 (1 2中切换) */
 
-    { MODKEY,              XK_b,            focusmon,         {.i = +1} },               /* super b            |  光标移动到另一个显示器 */
-    { MODKEY|ShiftMask,    XK_b,            tagmon,           {.i = +1} },               /* super shift b      |  将聚焦窗口移动到另一个显示器 */
+    { MODKEY,              XK_i,            focusmon,         {.i = +1} },               /* super b            |  光标移动到另一个显示器 */
+    { MODKEY|ShiftMask,    XK_i,            tagmon,           {.i = +1} },               /* super shift b      |  将聚焦窗口移动到另一个显示器 */
 
     { MODKEY,              XK_q,            killclient,       {0} },                     /* super q            |  关闭窗口 */
     { MODKEY|ControlMask,  XK_q,            forcekillclient,  {0} },                     /* super ctrl q       |  强制关闭窗口(处理某些情况下无法销毁的窗口) */
@@ -145,7 +162,7 @@ static Key keys[] = {
     { MODKEY,              XK_Return,      spawn, SHCMD("kitty") },                                              /* super enter        | 打开st终端             */
     { MODKEY,              XK_minus,       spawn, SHCMD("kitty --class global") },                               /* super +            | 打开全局st终端         */
     { MODKEY,              XK_space,       spawn, SHCMD("kitty --class float") },                                /* super space        | 打开浮动st终端         */
-    { MODALT|ShiftMask,    XK_Return,      spawn, SHCMD("rofi -show \"TOOL\" -modi 'TOOL:~/scripts/rofi.py' -theme \"$HOME\"/.config/rofi/config/tool.rasi") },         /* alt return         | rofi: 菜单             */
+    { MODALT|ShiftMask,    XK_Return,      spawn, SHCMD("rofi -show tool -modi \"tool:~/scripts/rofi.py\" -terminal st -theme /home/bulabula/.config/rofi/config/tool.rasi") },         /* alt return         | rofi: 菜单             */
     { MODKEY|ControlMask,  XK_Return,      spawn, SHCMD("~/.config/rofi/bin/powermenu") },                           /* super shift return | rofi: 电源菜单         */
     { MODALT,              XK_Return,      spawn, SHCMD("~/.config/rofi/bin/launcher") },                            /* alt shift return   | rofi: 执行命令         */
     { MODKEY,              XK_p,           spawn, SHCMD("~/scripts/bin/blurlock.sh") },                              /* super p            | 锁定屏幕               */
@@ -153,6 +170,7 @@ static Key keys[] = {
     { MODKEY,              XK_F5,          spawn, SHCMD("~/scripts/bin/light.sh down") },                            /* super shift down   | 音量减                 */
     { MODKEY,              XK_F3,          spawn, SHCMD("~/scripts/bin/vol.sh up") },                                /* super shift up     | 音量加                 */
     { MODKEY,              XK_F2,          spawn, SHCMD("~/scripts/bin/vol.sh down") },                              /* super shift down   | 音量减                 */
+    { MODKEY,              XK_F1,          spawn, SHCMD("pcmanfm") },                                                /* super f1           | 文件管理器                 */
     { MODALT|ShiftMask,    XK_a,           spawn, SHCMD("~/.config/rofi/bin/screenshot") },                          /* super shift a      | 截图                   */
     { MODKEY|ShiftMask,    XK_a,           spawn, SHCMD("flameshot gui -c -p ~/Pictures/screenshots") },             /* super shift a      | 截图                   */
     { MODKEY|ShiftMask,    XK_q,           spawn, SHCMD("kill -9 $(xprop | grep _NET_WM_PID | awk '{print $3}')") }, /* super shift q      | 选中某个窗口并强制kill */
@@ -162,20 +180,17 @@ static Key keys[] = {
     /* super shift key : 将聚焦窗口移动到对应tag */
     /* 若跳转后的tag无窗口且附加了cmd1或者cmd2就执行对应的cmd */
     /* key tag cmd1 cmd2 */
-    TAGKEYS(XK_1, 0,  0,  0)
-    TAGKEYS(XK_2, 1,  0,  0)
-    TAGKEYS(XK_3, 2,  0,  0)
-    TAGKEYS(XK_4, 3,  0,  0)
-    TAGKEYS(XK_5, 4,  0,  0)
-    TAGKEYS(XK_c, 5,  "google-chrome-stable", 0)
-    TAGKEYS(XK_m, 6,  "", "pavucontrol")
-    TAGKEYS(XK_8, 7,  "telegram-desktop", 0)
-    TAGKEYS(XK_9, 8,  "discord", 0)
-    TAGKEYS(XK_0, 9,  "tencent-qq", 0)
-    TAGKEYS(XK_w, 10, "/opt/apps/com.qq.weixin.deepin/files/run.sh", 0)
-    TAGKEYS(XK_F1, 11, "pcmanfm", 0)
-    TAGKEYS(XK_n, 12, "virt-manager", 0)
-    TAGKEYS(XK_b, 13, "~/apps/burpsuite/run.sh", 0)
+    TAGKEYS(XK_1,  0,  0,  0)
+    TAGKEYS(XK_2,  1,  0,  0)
+    TAGKEYS(XK_3,  2,  0,  0)
+    TAGKEYS(XK_4,  3,  0,  0)
+    TAGKEYS(XK_5,  4,  "obs",  0)
+    TAGKEYS(XK_e,  5,  "google-chrome-stable", 0)
+    TAGKEYS(XK_m,  6,  "~/scripts/bin/music.sh", "pavucontrol")
+    TAGKEYS(XK_0,  7,  "tencent-qq", 0)
+    TAGKEYS(XK_w,  8, "/opt/apps/com.qq.weixin.deepin/files/run.sh", 0)
+    TAGKEYS(XK_d,  9, "virt-manager", 0)
+    TAGKEYS(XK_r,  10, "~/apps/burpsuite/run.sh", 0)
 };
 static Button buttons[] = {
     /* click               event mask       button            function       argument  */

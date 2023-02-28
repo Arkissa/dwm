@@ -67,7 +67,7 @@ class MyVol:
 
     def update(self) -> None:
 
-        text = f" {self.icon} {self.vol} "
+        text = f"{self.icon} {self.vol} "
 
         print(text)
         with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
