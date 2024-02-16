@@ -6,32 +6,31 @@ import re
 
 
 class MyVol:
-    def __init__(self, *args) -> None:
+    def __init__(self) -> None:
         self.this = "vol"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
         # self.color = "^c#1A1A1A^^b#516FAB^"
         self.color = "^c#babbf1^^b#1a1b26^"
         self.signal = f"^s{self.this}^"
-        self.handle()
 
-        match args[0]:
-            case "update":
-                self.update()
-            case "notify":
-                self.notify()
-            case _:
-                self.click(args[1])
+    def __str__(self) -> str:
+        return self.this
 
-    def handle(self):
+    def update(self) -> tuple[str, str]:
         byte, _ = subprocess.Popen(
             ["/bin/pactl", "info"], stdout=subprocess.PIPE
         ).communicate()
         sink_stdout = byte.decode()
         sink_stdout = re.search("Default Sink: .*", sink_stdout)
-        self.sink_stdout = sink_stdout and sink_stdout.group().replace(
-            "\n", ""
-        ).replace("Default Sink: ", "").replace("\n", "")
+        
+        self.sink_stdout = sink_stdout \
+                                .group() \
+                                .replace("\n", "") \
+                                .replace("Default Sink: ", "") \
+                                .replace("\n", "") \
+                                if sink_stdout is not None \
+                                else ""
 
         byte, _ = subprocess.Popen(
             [
@@ -65,24 +64,14 @@ class MyVol:
             or (str(vol) + "%", "墳")
         )
 
-    def update(self) -> None:
-
         text = f"{self.icon} {self.vol} "
 
         print(text)
-        with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
-            lines = f.readlines()
-            tmp = []
 
-            f.seek(0)
-            for line in lines:
-                _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
-
-            tmp.append(
-                f'{self.this} = "{self.color}{self.signal}{text}{self.s2d_reset}"\n'
-            )
-            f.truncate()
-            f.writelines(tmp)
+        return (
+            rf"{self.this} = .*$",
+            f'{self.this} = ("{self.color}{self.signal}{text}{self.s2d_reset}", 6)\n'
+        )
 
     def notify(self):
         byte, _ = subprocess.Popen(
@@ -124,3 +113,9 @@ class MyVol:
                     ["/bin/bash", "-c", "pactl set-sink-volume @DEFAULT_SINK@ -5%"],
                 )
                 self.notify()
+
+    def second(self) -> int:
+        return 2
+
+    def close(self) -> None:
+        pass

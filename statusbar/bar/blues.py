@@ -6,14 +6,18 @@ import re
 
 
 class MyBlues:
-    def __init__(self, *args) -> None:
+    def __init__(self) -> None:
         self.this = "blues"
         self.dwm = os.environ["DWM"]
-        self.s2d_reset = "^d^"
-        # self.color = "^c#1A1A1A^^b#516FAB^"
+        self.s2d_reset = "^d^"  # self.color = "^c#1A1A1A^^b#516FAB^"
         self.color = "^c#babbf1^^b#1a1b26^"
         self.signal = f"^s{self.this}^"
 
+
+    def __str__(self) -> str:
+        return self.this
+
+    def update(self) -> tuple[str, str]:
         self.blues_status, _ = subprocess.Popen(
             [
                 "/bin/bash",
@@ -56,17 +60,6 @@ class MyBlues:
             ["/bin/bash", "-c", "bluetoothctl info"], stdout=subprocess.PIPE
         ).communicate()
         self.blues_info = blues_info.decode().split("\n")[0]
-        self.handle()
-
-        match args[0]:
-            case "update":
-                self.update()
-            case "notify":
-                self.notify()
-            case _:
-                self.click(args[1])
-
-    def handle(self):
         blues = []
         if self.blues_info == "Missing device address argument":
             self.blues_name = "OPEN"
@@ -83,6 +76,8 @@ class MyBlues:
             and ""
             or self.blues_type.decode() == "audio-headset\n"
             and ""
+            or self.blues_type.decode() == "input-keyboard\n"
+            and ""
             or ""
         )
 
@@ -90,24 +85,13 @@ class MyBlues:
 
         self.blues_icon = " ".join(blues)
 
-    def update(self) -> None:
-
         text = f"{self.blues_icon} {self.blues_name} "
 
         print(text)
-        with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
-            lines = f.readlines()
-            tmp = []
-
-            f.seek(0)
-            for line in lines:
-                _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
-
-            tmp.append(
-                f'{self.this} = "{self.color}{self.signal}{text}{self.s2d_reset}"\n'
-            )
-            f.truncate()
-            f.writelines(tmp)
+        return (
+            rf"{self.this} = .*$",
+            f'{self.this} = ("{self.color}{self.signal}{text}{self.s2d_reset}", 7)\n'
+        )
 
     def notify(self) -> None:
         msg = (
@@ -138,11 +122,15 @@ class MyBlues:
             9: "",
             10: "",
         }
+        match = re.search(r"(.+?)-(.+?)\n", self.blues_type.decode())
         battery = subprocess.check_output(
             [
                 "/bin/bash",
                 "-c",
-                f"upower -i /org/freedesktop/UPower/devices/headset_dev_{self.blues_mac.replace(':', '_')}",
+                "upower -i /org/freedesktop/UPower/devices/{}_dev_{}".format(
+                    match is not None and match.group(2) or "",
+                    self.blues_mac.replace(":", "_"),
+                ),
             ]
         )
         battery = battery != b"" and battery.decode() or ""
@@ -169,3 +157,9 @@ class MyBlues:
                     ["/bin/bash", "-c", "killall blueberry || blueberry &"],
                     stdout=subprocess.PIPE,
                 ).communicate()
+
+    def second(self) -> int:
+        return 2
+
+    def close(self) -> None:
+        pass

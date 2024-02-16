@@ -6,24 +6,13 @@ import re
 
 
 class MyBat:
-    def __init__(self, *args) -> None:
+    def __init__(self) -> None:
         self.this = "bat"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
         self.color = "^c#babbf1^^b#1a1b26^"
         # self.color = "^c#1A1A1A^^b#516FAB^"
         self.signal = f"^s{self.this}^"
-        self.handle()
-
-        match args[0]:
-            case "update":
-                self.update()
-            case "notify":
-                self.notify()
-            case _:
-                self.click(args[1])
-
-    def handle(self):
         self.bat = {
             0: "",
             1: "",
@@ -37,6 +26,11 @@ class MyBat:
             9: "",
             10: "",
         }
+
+    def __str__(self) -> str:
+        return self.this
+
+    def update(self) -> tuple[str, str]:
         byte, _ = subprocess.Popen(
             ["/bin/acpi", "-b"], stdout=subprocess.PIPE
         ).communicate()
@@ -45,35 +39,28 @@ class MyBat:
         stdout = re.sub(r"\w+$", "", stdout, re.I)
         stdout = stdout.split("\n")[0].split(",")
 
-        _ = len(stdout) < 3 and stdout.append("")
+        if len(stdout) < 3:
+            stdout.append("")
 
-        self.status, self.remaining, self.time = stdout
+        self.status, \
+        self.remaining, \
+        self.time = stdout
+
         find = re.search(r"\d+:\d+:\d+", self.time)
-        self.time = find and find.group() or ""
+        self.time = find.group() if find else ""
         remaining = self.remaining.split("%")[0]
 
         remaining = int(int(remaining) * 0.1)
-        charge_icon = self.status not in ("Discharging", "Full") and "ﮣ" or ""
+        charge_icon = "ﮣ" if self.status not in ("Discharging", "Full") else ""
         self.icon = charge_icon + self.bat[remaining]
-
-    def update(self) -> None:
 
         text = f"{self.icon}{self.remaining:4} "
 
         print(text)
-        with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
-            lines = f.readlines()
-            tmp = []
-
-            f.seek(0)
-            for line in lines:
-                _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
-
-            tmp.append(
-                f'{self.this} = "{self.color}{self.signal}{text}{self.s2d_reset}"\n'
-            )
-            f.truncate()
-            f.writelines(tmp)
+        return (
+            rf"{self.this} = .*$",
+            f'{self.this} = ("{self.color}{self.signal}{text}{self.s2d_reset}", 8)\n'
+        )
 
     def notify(self) -> None:
         time: str = self.time and f"\n可用时间: {self.time}" or ""
@@ -86,7 +73,7 @@ class MyBat:
             ]
         )
 
-    def click(self, mode) -> None:
+    def click(self, mode: str) -> None:
         match mode:
             case "L":
                 self.notify()
@@ -106,3 +93,9 @@ class MyBat:
                         "killall xfce4-power-manager-settings || xfce4-power-manager-settings",
                     ],
                 ).communicate()
+
+    def second(self) -> int:
+        return 2
+
+    def close(self) -> None:
+        pass

@@ -2,13 +2,13 @@
 
 import os
 import subprocess
-import datetime
+import time
 import calendar
 import re
 
 
 class MyDate:
-    def __init__(self, *args) -> None:
+    def __init__(self) -> None:
         self.this = "date"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
@@ -28,42 +28,31 @@ class MyDate:
             "11": "",
             "12": "",
         }
+        self.weekday = ["一", "二", "三", "四", "五", "六", "日"]
 
-        match args[0]:
-            case "update":
-                self.update()
-            case "notify":
-                self.notify()
-            case _:
-                self.click(args[1])
+    def __str__(self) -> str:
+        return self.this
 
-    def update(self) -> None:
-        now = datetime.datetime.now()
-        self.time: str = f'{now.strftime("%R")}  {now.strftime("%m/%d")}'
-        minute = now.strftime("%I")
+    def update(self) -> tuple[str, str]:
+        now = time.localtime()
+        t: str = f'{now.tm_hour}:{now.tm_min}  {self.weekday[now.tm_wday]} {time.strftime("%m", now)}/{now.tm_mday}'
+        minute = time.strftime("%I", now)
 
-        text = f"{self.icon[minute]} {self.time} "
+        text = f"{self.icon[minute]} {t} "
 
         print(text)
-        with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
-            lines = f.readlines()
-            tmp = []
-
-            f.seek(0)
-            for line in lines:
-                _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
-
-            tmp.append(
-                f'{self.this} = "{self.color}{self.signal}{text}{self.s2d_reset}"\n'
-            )
-            f.truncate()
-            f.writelines(tmp)
+        
+        return (
+            rf"{self.this} = .*$",
+            f'{self.this} = ("{self.color}{self.signal}{text}{self.s2d_reset}", 1)\n'
+        )
 
     def notify(self) -> None:
-        now = datetime.datetime.now()
+        now = time.localtime()
         cal = (
-            calendar.month(now.year, now.month)
-            .replace(str(now.day), f'<b><span color="#4F5C80">{now.day}</span></b>', 1)
+            calendar.month(now.tm_year, now.tm_mon)
+            .replace(str(now.tm_year), "")
+            .replace(str(now.tm_mday), f'<b><span color="#4F5C80">{now.tm_mday}</span></b>', 1)
             .replace("\n", "\\n")
         )
         todo = ""
@@ -83,7 +72,7 @@ class MyDate:
             [
                 "/bin/bash",
                 "-c",
-                f"notify-send '  Calendar\n{'-' * 20}' '{cal}\n<b>{'-' * 20}</b>\n TODO\n{todo}' -r 9527",
+                f"notify-send '  Calendar {now.tm_year}\n{'-' * 20}' '{' '*3}{cal}\n<b>{'-' * 20}</b>\n TODO\n{todo}' -r 9527",
             ],
         )
 
@@ -132,3 +121,9 @@ class MyDate:
                 self.notify()
             case "R":
                 self.todo()
+
+    def second(self) -> int:
+        return 1
+
+    def close(self) -> None:
+        pass

@@ -4,11 +4,10 @@ import os
 import datetime
 import subprocess
 import psutil
-import re
 
 
 class MyCpu:
-    def __init__(self, *args) -> None:
+    def __init__(self) -> None:
         self.this = "cpu"
         self.dwm = os.environ["DWM"]
         self.s2d_reset = "^d^"
@@ -16,15 +15,10 @@ class MyCpu:
         self.color = "^c#babbf1^^b#1a1b26^"
         self.signal = f"^s{self.this}^"
 
-        match args[0]:
-            case "update":
-                self.update()
-            case "notify":
-                self.notify()
-            case _:
-                self.click(args[1])
+    def __str__(self) -> str:
+        return self.this
 
-    def update(self) -> None:
+    def update(self) -> tuple[str, str]:
         cpu_icon = "閭"
         cpu_usage = psutil.cpu_percent()
         cpu = round(cpu_usage)
@@ -48,19 +42,10 @@ class MyCpu:
         text = f"{temps_icon} {temps}°C {cpu} "
 
         print(text)
-        with open(self.dwm + "/statusbar/tmp.py", "r+") as f:
-            lines = f.readlines()
-            tmp = []
-
-            f.seek(0)
-            for line in lines:
-                _ = re.search(rf"{self.this} = .*$", line) or tmp.append(line)
-
-            tmp.append(
-                f'{self.this} = "{self.color}{self.signal}{text}{self.s2d_reset}"\n'
-            )
-            f.truncate()
-            f.writelines(tmp)
+        return (
+            rf"{self.this} = .*$",
+            f'{self.this} = ("{self.color}{self.signal}{text}{self.s2d_reset}", 2)\n'
+        )
 
     def notify(self) -> None:
         boot_time = psutil.boot_time()
@@ -143,3 +128,9 @@ class MyCpu:
                 self.notify()
             case "R":
                 self.btop()
+
+    def second(self) -> int:
+        return 5
+
+    def close(self) -> None:
+        pass
